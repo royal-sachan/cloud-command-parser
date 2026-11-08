@@ -91,8 +91,9 @@ def main():
             "<i>Command: ...\\nJSON: ...</i> + EOS; the loss is computed on the JSON part only. The teacher JSON is re-serialised with fixed key order "
             "(same content). Config (<i>training/config.yaml</i>): seed 42, lr 3e-4, batch 16, 6 epochs, max length 96; v2 uses seed 7 and 8 epochs. "
             "Models and checksums: bucket <i>models/v1</i>, <i>models/v2</i>, GitHub Release assets <i>model-v1.zip</i>, <i>model-v2.zip</i>.")]
-    cols = [("teacher_validation.json", "Teacher phi3.5"), ("untrained_validation.json", "Pythia-70M untrained"),
-            ("student_v1_validation.json", "Student v1"), ("student_v2_validation.json", "Student v2")]
+    cols = [("teacher_validation.json", "Teacher"), ("untrained_validation.json", "Untrained"),
+            ("student_v1_validation.json", "Student v1"), ("student_v2_validation.json", "Student v2"),
+            ("student_v3_validation.json", "Student v3")]
     keys = ["json_validity", "intent_accuracy", "date_accuracy", "time_accuracy", "place_accuracy", "full_frame"]
     reps = [J(f) for f, _ in cols]
     S += [tbl([["Metric (%) on validation (100)"] + [n for _, n in cols]] +
@@ -151,7 +152,12 @@ def main():
             "GitHub Actions (<i>.github/workflows/ci.yml</i>) runs lint &rarr; unit tests (10 tests) &rarr; model evaluation (downloads <i>model-v1.zip</i> "
             "from the Release, runs <i>score.py</i>) &rarr; quality gate (<i>score.py --min-validity 95</i>), plus a gitleaks secret scan. ")]
     fr = RES / "ci_failed_run.txt"
-    S += [P("Run that fails at the quality gate (untrained Pythia-70M): " + (fr.read_text().strip() if fr.exists() else NA), B),
+    ci_baseline = (fr.read_text().strip() if fr.exists()
+                   else "Not completed: no baseline CI run has been recorded; this check remains outstanding.")
+    S += [P("Baseline quality-gate run (untrained Pythia-70M): " + ci_baseline, B),
+          P("Release-model CI passed all jobs, including secret scan, lint, unit tests, model evaluation and quality gate: "
+            "<link href='https://github.com/royal-sachan/cloud-command-parser/actions/runs/42460941563'>run 42460941563</link>. "
+            "The optional fresh-clone test was skipped.", B),
           P("AI tools used and how output was verified: see <i>AI_USE.md</i>.", B)]
 
     # Task 7
